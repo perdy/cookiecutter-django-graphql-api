@@ -93,11 +93,6 @@ class LoggingMixin:
                 'level': 'INFO',
                 'propagate': True,
             },
-            'recipes': {
-                'handlers': ['console', 'base_file', 'mail_admins'],
-                'level': 'INFO',
-                'propagate': False,
-            },
             '{{ cookiecutter.app_slug }}': {
                 'handlers': ['console', 'base_file', 'mail_admins'],
                 'level': 'INFO',
@@ -107,11 +102,6 @@ class LoggingMixin:
                 'handlers': ['console', 'runserver_file'],
                 'level': 'INFO',
                 'propagate': True,
-            },
-            'recipes.middleware': {
-                'handlers': ['console', 'request_file', 'mail_admins'],
-                'level': 'INFO',
-                'propagate': False,
             },
             'django.security': {
                 'handlers': ['console', 'security_file', 'mail_admins'],
@@ -153,7 +143,6 @@ class Base(LoggingMixin, RESTFrameworkMixin, Configuration):
         # Project apps
         '{{ cookiecutter.app_slug }}',
         'core',
-        'recipes',
         # GraphQL
         'graphene_django',
         'django_filters',

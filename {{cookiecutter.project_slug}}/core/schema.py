@@ -1,9 +1,9 @@
-import graphene
+# # Add your GraphQL queries here
 
-
-class Query(recipes.schema.Query,
-            graphene.ObjectType):
-    pass
-
-
-schema = graphene.Schema(query=Query)
+# import graphene
+#
+# class Query(my_app.schema.Query,
+#             graphene.ObjectType):
+#     pass
+#
+# schema = graphene.Schema(query=Query)
