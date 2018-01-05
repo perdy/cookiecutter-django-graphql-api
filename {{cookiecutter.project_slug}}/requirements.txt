@@ -1,0 +1,26 @@
+## System dependencies and utilities
+clinner
+health_check
+Pillow
+psycopg2
+uwsgi
+
+## Django
+Django
+django-configurations
+django-extensions
+django-redis-cache
+django-cleanup
+django-filter
+
+## Django fields
+django-imagekit
+
+## Frontend
+whitenoise
+
+## REST framework
+djangorestframework
+
+## GraphQL
+graphene_django

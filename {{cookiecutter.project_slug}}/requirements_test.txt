@@ -1,0 +1,15 @@
+-r requirements.txt
+
+## Tests
+coverage
+factory_boy
+
+## IPython
+ipdb
+ipython
+
+## Static Analysis
+prospector
+
+## Django parallel tests
+tblib

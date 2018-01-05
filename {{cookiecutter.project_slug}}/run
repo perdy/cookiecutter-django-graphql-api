@@ -1,0 +1,105 @@
+#!/usr/bin/env python{{ cookiecutter.python_version }}
+"""Run script.
+"""
+import argparse
+import os
+import shlex
+import sys
+from typing import List
+
+import configurations.importer
+from clinner.command import Type as CommandType, command
+from clinner.run import HealthCheckMixin, Main as ClinnerMain
+
+PYTHON = 'python{{ cookiecutter.python_version }}'
+COVERAGE = 'coverage'
+PROSPECTOR = 'prospector'
+HEALTH_CHECK = 'health_check'
+PASSENGER = 'passenger'
+
+
+class Main(HealthCheckMixin, ClinnerMain):
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        parser.add_argument('-s', '--settings', default='{{ cookiecutter.app_slug }}.settings:Development', help='Settings class')
+
+    def inject_app_settings(self):
+        """
+        Injecting own settings.
+        """
+        host = os.environ.get('APP_HOST', '0.0.0.0')
+        port = os.environ.get('APP_PORT', '8000')
+
+        os.environ['APP_HOST'] = host
+        os.environ['APP_PORT'] = port
+        os.environ['DJANGO_SETTINGS_MODULE'], os.environ['DJANGO_CONFIGURATION'] = self.settings.rsplit(':', 1)
+        os.environ['HEALTH_CHECK_SETTINGS'] = self.settings
+
+        # Mark django-configurations as installed to avoid setup error
+        configurations.importer.install()
+
+    def health_check(self):
+        """
+        Does a check using Health Check application.
+
+        :return: 0 if healthy.
+        """
+        return not self.run_command('manage', 'health_check', 'health', '-e')
+
+
+@command(command_type=CommandType.SHELL,
+         parser_opts={'help': 'Django manage commands'})
+def manage(*args, **kwargs) -> List[List[str]]:
+    cmd = shlex.split(f'{PYTHON} manage.py')
+    cmd += args
+    return [cmd]
+
+
+@command(command_type=CommandType.SHELL,
+         parser_opts={'help': 'Apply django migrations'})
+def migrate(*args, **kwargs) -> List[List[str]]:
+    return manage('migrate', *args)
+
+
+@command(command_type=CommandType.SHELL,
+         parser_opts={'help': 'Django collect statics'})
+def collectstatic(*args, **kwargs) -> List[List[str]]:
+    return manage('collectstatic', *args)
+
+
+@command(command_type=CommandType.SHELL,
+         parser_opts={'help': 'Migrate and collect statics'})
+def build(*args, **kwargs) -> List[List[str]]:
+    return migrate('--fake-initial') + collectstatic('--noinput')
+
+
+@command(command_type=CommandType.SHELL,
+         parser_opts={'help': 'Run prospector lint'})
+def prospector(*args, **kwargs) -> List[List[str]]:
+    cmd = [PROSPECTOR]
+    cmd += args
+    return [cmd]
+
+
+@command(command_type=CommandType.SHELL,
+         parser_opts={'help': 'Run development server'})
+def runserver(*args, **kwargs) -> List[List[str]]:
+    return build() + manage('runserver', *args)
+
+
+@command(command_type=CommandType.SHELL)
+def uwsgi(*args, **kwargs) -> List[List[str]]:
+    http = '{}:{}'.format(os.environ['APP_HOST'], os.environ['APP_PORT'])
+    cmd = ['uwsgi', '--http', http]
+    cmd += args
+    return build() + [cmd]
+
+
+@command(command_type=CommandType.SHELL,
+         parser_opts={'help': 'Django shell'})
+def shell(*args, **kwargs) -> List[List[str]]:
+    return manage('shell_plus', *args)
+
+
+if __name__ == '__main__':
+    main = Main()
+    sys.exit(main.run())
