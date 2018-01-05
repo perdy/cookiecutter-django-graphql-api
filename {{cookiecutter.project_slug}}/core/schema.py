@@ -1,9 +1,8 @@
-# # Add your GraphQL queries here
+# Add your GraphQL queries here
 
-# import graphene
-#
-# class Query(my_app.schema.Query,
-#             graphene.ObjectType):
-#     pass
-#
-# schema = graphene.Schema(query=Query)
+import graphene
+
+class Query(graphene.ObjectType):
+    pass
+
+schema = graphene.Schema(query=Query)
